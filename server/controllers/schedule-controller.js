@@ -5,7 +5,7 @@ const _  = require('lodash');
 var {validate_parent} = require('./../middleware/validation');
 
 exports.create_schedule = function(req, res) {
-  var scheduleInfo   = _.pick(req.body, ['name' , 'description' , 'parent_type', 'parent_id']);
+  var scheduleInfo   = _.pick(req.body, ['name' , 'description' , 'parent_type', 'parent_id', 'end_time']);
 
   scheduleInfo.creator_id = req.user._id;
 
@@ -22,11 +22,11 @@ exports.create_schedule = function(req, res) {
 }
 
 exports.update_schedule = function(req, res) {
-  var schedule_id = req.body.schedule_id;
+  var schedule_id = req.params.schedule_id;
   var schedule_info = req.body;
   Schedule.updateSchedule(schedule_id, schedule_info)
-  .then(savedSchedule => {
-    res.send({ message: 'Schedule updated successfully', schedule_model : savedSchedule });
+  .then(schedule_model => {
+    res.send({ message: 'Schedule updated successfully', schedule_model });
   })
   .catch(e => {
     res.status(422).send(e);

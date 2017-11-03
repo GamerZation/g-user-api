@@ -6,6 +6,8 @@ const validator = require('validator');
 const jwt       = require('jsonwebtoken');
 const config    = require('./../config/config')
 const ObjectId  = Schema.Types.ObjectId;
+var job = require('node-schedule');
+var moment = require('moment');
 
 var scheduleSchema = new Schema({
   name : {
@@ -24,6 +26,10 @@ var scheduleSchema = new Schema({
   parent_id : {
     type: ObjectId,
     required : true
+  },
+  available : {
+    type: Boolean,
+    default : true
   },
   participants : [{
     type: {
@@ -81,6 +87,10 @@ scheduleSchema.pre('save',function (next) {
   var Schedule = this;
   var now  = new Date();
   Schedule.updated_at = now;
+  var expire_date = new Date(Schedule.end_time);
+  job.scheduleJob(expire_date, function(){
+    Schedule.setEnded();
+  });
   if ( !Schedule.created_at ) {
     Schedule.created_at = now;
     next();
@@ -144,7 +154,7 @@ scheduleSchema.statics = {
     var Schedule = this;
     return Schedule.findOneAndUpdate({ _id : schedule_id}, { $pull : {
        participants : { participant_id } }
-     })
+     }, {new : true})
   },
   listSchedules() {
     var Schedule = this;
@@ -165,15 +175,21 @@ scheduleSchema.statics = {
   updateSchedule(schedule_id , schedule_info) {
     var Schedule = this;
     var options  = schedule_info;
-    return Schedule.findOneAndUpdate({ _id : schedule_id }, options)
+    return Schedule.findOneAndUpdate({ _id : schedule_id }, options, {new : true})
   },
   deleteSchedule(schedule_id) {
     var Schedule = this;
     return Schedule.deleteOne({ _id : schedule_id })
   }
 }
-
+scheduleSchema.methods = {
+  setEnded() {
+    var schedule = this;
+    schedule.available = false;
+    schedule.save()
+  }
+}
 var schduleModel =  mongoose.model('schedule',scheduleSchema);
 
 
-module.exports = mongoose.model('schedule',scheduleSchema);;
+module.exports = mongoose.model('schedule',scheduleSchema);

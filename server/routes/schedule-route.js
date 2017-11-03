@@ -21,7 +21,7 @@ router.get('/schedules', authenticate_user , scheduleController.list_schedules);
 router.get('/:schedule_id', authenticate_user , scheduleController.get_schedule);
 
 // GET SCHEDULES LISTING
-router.put('/', authenticate_schedule_creator , scheduleController.update_schedule);
+router.put('/:schedule_id', authenticate_schedule_creator , scheduleController.update_schedule);
 
 // DELETE SCHEDULE
 router.delete('/:schedule_id', authenticate_schedule_creator , scheduleController.delete_schedule);
