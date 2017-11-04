@@ -12,7 +12,7 @@ var app = express();
 var user     = require('./routes/user-route.js');
 var team     = require('./routes/team-route.js');
 var schedule = require('./routes/schedule-route.js');
-var game = require('./routes/game-route.js');
+var game     = require('./routes/game-route.js');
 
 app.use(bodyParser.json());
 

@@ -134,6 +134,19 @@ scheduleSchema.statics = {
       return Promise.reject(e);
     })
   },
+  validateById(schedule_id) {
+    var Schedule = this;
+    return Schedule.findOne({_id : schedule_id})
+    .then(schedule => {
+      if (!schedule) {
+        return Promise.reject();
+      }
+      return;
+    })
+    .catch(e => {
+      return Promise.reject();
+    })
+  },
   validateUserOwnership(user_id, schedule_id) {
     var Schedule = this;
     return Schedule.findOne({ creator_id : user_id , _id : schedule_id })

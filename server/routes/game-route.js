@@ -11,7 +11,7 @@ router.get('/:game_id', authenticate_user, gameController.get_game)
 
 router.post('/', authenticate_user, gameController.create_game);
 
-router.post(':game_id/:child_type/:child_id', authenticate_user, gameController.add_child);
+router.post('/:game_id/:child_type/:child_id', authenticate_user, gameController.add_child);
 
 router.post('/', authenticate_user, gameController.create_game);
 

@@ -3,6 +3,7 @@ var Team = require('./../models/team-model');
 var Schedule = require('./../models/schedule-model');
 
 var authenticate_user = function(req, res, next) {
+  console.log('in');
   var token = req.header('z-auth');
   User.findByToken(token)
   .then((user) => {

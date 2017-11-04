@@ -93,6 +93,28 @@ gameSchema.statics = {
     var Game    = this;
     var options = game_info;
     return Game.findOneAndUpdate({ _id : game_id }, options , {new : true})
+  },
+  addChild(game_id, child_id, child_type) {
+    var Game = this;
+    var update;
+    console.log(child_type);
+    if (child_type === 'schedules') {
+      update = { schedules : {  schedule_id : child_id  } }
+    }
+    if (child_type === 'teams') {
+      update = { teams : {  team_id : child_id  } }
+    }
+    if (child_type === 'users') {
+      update = { users : {  user_id : child_id  } }
+    }
+    console.log(update);
+    Game.findOneAndUpdate({ _id : game_id },{ $addToSet : update })
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
   }
 }
 
