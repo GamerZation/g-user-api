@@ -26,5 +26,15 @@ router.put('/:schedule_id', authenticate_schedule_creator , scheduleController.u
 // DELETE SCHEDULE
 router.delete('/:schedule_id', authenticate_schedule_creator , scheduleController.delete_schedule);
 
+// POST -- ADD THE USER ID TO THE SCHEDULE JOIN REQUESTS
+// BODY -- child_id - child_type - REQUIRED
+// PARAMS -- schedule_id
+router.post('/:schedule_id/join_requests', authenticate_user , scheduleController.add_join_request)
+
+// DELETE -- REJECT USER FROM JOINING THE SCHEDULE
+// BODY   -- child_id - child_type -- REQUIRED
+// PARAMS -- schedule_id
+router.delete('/:schedule_id/join_requests', authenticate_user , scheduleController.destroy_join_request)
+
 
 module.exports = router;

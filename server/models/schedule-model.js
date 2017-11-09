@@ -58,6 +58,10 @@ var scheduleSchema = new Schema({
     required : false
   },
   invitaions : [],
+  join_requests : [{
+    child_id : ObjectId,
+    _id : false
+  }],
   privacy : {
     type: String,
     enum : ['private','public']
@@ -151,11 +155,46 @@ scheduleSchema.statics = {
     var Schedule = this;
     return Schedule.findOne({ creator_id : user_id , _id : schedule_id })
   },
+  addJoinRequest(schedule_id ,child_type ,child_id) {
+    var Schedule = this;
+    return Schedule.findOneAndUpdate(
+      { _id : schedule_id, parent_type : child_type },
+      { $addToSet : { join_requests : { child_id } }  },
+      { new : true }
+    )
+    .then(scheduleModel => {
+      if (!scheduleModel) {
+        return Promise.reject({ message : 'schedule was not found' })
+      }
+      return scheduleModel;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  destroyJoinRequest(schedule_id ,child_type ,child_id) {
+    var Team = this;
+    return Team.findOneAndUpdate(
+      { _id : schedule_id, parent_type : child_type },
+      { $pull : { join_requests : { child_id } }  },
+      { new : true }
+    )
+    .then(doc => {
+      if (!scheduleModel) {
+        return Promise.reject({ message : 'schedule was not found' })
+      }
+      return scheduleModel;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
   joinSchedule(schedule_id, {participant_id , type}) {
     var Schedule = this;
-    return Schedule.findOneAndUpdate({ _id : schedule_id } , { $addToSet : {
-       participants : {  participant_id , type } }
-     })
+    return Schedule.findOneAndUpdate(
+      { _id : schedule_id },
+      { $addToSet : { participants : {  participant_id , type } } }
+     )
      .then(doc => {
        return doc;
      })
@@ -165,9 +204,11 @@ scheduleSchema.statics = {
   },
   kickParticipant(schedule_id, participant_id) {
     var Schedule = this;
-    return Schedule.findOneAndUpdate({ _id : schedule_id}, { $pull : {
-       participants : { participant_id } }
-     }, {new : true})
+    return Schedule.findOneAndUpdate(
+      { _id : schedule_id},
+      { $pull : { participants : { participant_id } } },
+      {new : true}
+    )
   },
   listSchedules() {
     var Schedule = this;

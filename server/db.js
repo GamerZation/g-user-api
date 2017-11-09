@@ -1,7 +1,7 @@
 var mongoose  = require('mongoose');
 
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://hiso:1234@ds237475.mlab.com:37475/z-db");
+mongoose.connect("mongodb://localhost:27017/z-user-api");
 
 
 module.exports = {mongoose}

@@ -99,6 +99,38 @@ exports.edit_team = function(req, res) {
 
 }
 
+// FOR ADDING JOIN REQUESTS TO THE TEAM JOIN REQUESTS ARRAY
+// USER ID STORED INSIDE THAT ARRAY AND MOST PROBABLY THE TEAM WANT TO SEE THE REQUESTS
+// IN CASE OF ACCEPTING THE USER ID WILL BE REMOVED FROM THE REQUESTS AND THE USER WILL BE ADDED TO THE MEMBERS ARRAY
+// IN CASE OF REJECTION THE USER ID WILL BE REMOVED -> destroy_join_request
+exports.add_join_request = function(req, res) {
+  var user_id = req.user._id;
+  var team_id = req.params.team_id;
+
+  Team.addJoinRequest(team_id ,user_id )
+  .then(team_model => {
+    res.send({ message : 'Request was sent successfuly', team_model })
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
+
+// FOR REJECTING / DELETING THE USER FROM THE JOIN REQUESTS ARRAY
+exports.destroy_join_request = function(req, res) {
+  var user_id = req.body.user_id;
+  var team_id = req.params.team_id;
+
+  Team.destroyJoinRequest(team_id ,user_id )
+  .then(team_model => {
+    res.send({ message : 'User rejected successfuly' , team_model })
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
 exports.kick_member = function(req, res) {
   var senderData  = req.user;
   var member_id   = req.body.member_id;

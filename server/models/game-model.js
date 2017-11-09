@@ -94,21 +94,68 @@ gameSchema.statics = {
     var options = game_info;
     return Game.findOneAndUpdate({ _id : game_id }, options , {new : true})
   },
+  listChildGames(child_id, child_type){
+    var Game = this;
+    var query;
+    if (child_type === 'schedule') {
+      query = { schedules : { schedule_id : child_id } }
+    }
+    else if (child_type === 'team') {
+      query = { teams : {  team_id : child_id  } }
+    }
+    else if (child_type === 'user') {
+      query = { users : {  user_id : child_id  } }
+    }
+    else {
+      return Promise.reject('child is not available in this game');
+    }
+    return Game.find(query)
+    .then(games => {
+      return games;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
   addChild(game_id, child_id, child_type) {
     var Game = this;
     var update;
-    console.log(child_type);
-    if (child_type === 'schedules') {
+    if (child_type === 'schedule') {
       update = { schedules : {  schedule_id : child_id  } }
     }
-    if (child_type === 'teams') {
+    else if (child_type === 'team') {
       update = { teams : {  team_id : child_id  } }
     }
-    if (child_type === 'users') {
+    else if (child_type === 'user') {
       update = { users : {  user_id : child_id  } }
     }
-    console.log(update);
+    else {
+      return Promise.reject('child is not available in this game');
+    }
     Game.findOneAndUpdate({ _id : game_id },{ $addToSet : update })
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  deleteChild(game_id, child_id, child_type) {
+    var Game = this;
+    var update;
+    if (child_type === 'schedule') {
+      update = { schedules : {  schedule_id : child_id  } }
+    }
+    else if (child_type === 'team') {
+      update = { teams : {  team_id : child_id  } }
+    }
+    else if (child_type === 'user') {
+      update = { users : {  user_id : child_id  } }
+    }
+    else {
+      return Promise.reject('child is not available in this game');
+    }
+    Game.findOneAndUpdate({ _id : game_id },{ $pull : update })
     .then(doc => {
       return doc;
     })

@@ -23,6 +23,10 @@ var TeamSchema = new Schema({
     type: ObjectId,
     required  : true
   },
+  join_requests : [{
+    user_id : ObjectId,
+    _id : false
+  }],
   members : [{
     member_id : {
       type: ObjectId
@@ -64,7 +68,7 @@ TeamSchema.statics = {
       if (!team) {
         return Promise.reject();
       }
-      return;
+      return team;
     })
     .catch(e => {
       return Promise.reject();
@@ -104,7 +108,11 @@ TeamSchema.statics = {
   updateTeam(team_id ,reqBody) {
     var Team = this;
     var options = { name , description } = reqBody;
-    return Team.findOneAndUpdate({_id : team_id}, options, {new : true})
+    return Team.findOneAndUpdate(
+      {_id : team_id},
+      options,
+      {new : true}
+    )
     .then(doc => {
       return doc
     })
@@ -146,12 +154,41 @@ TeamSchema.statics = {
   },
   removeMember(team_id, user_id) {
     var Team = this;
-
-    return Team.findOneAndUpdate({ _id : team_id } , { $pull : {
-      members : { member_id : user_id } }
-    }, {new : true})
+    return Team.findOneAndUpdate(
+      { _id : team_id },
+      { $pull : { members : { member_id : user_id } } },
+      {new : true}
+    )
     .then(savedTeam => {
       return savedTeam;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  addJoinRequest(team_id ,user_id ) {
+    var Team = this;
+    return Team.findOneAndUpdate(
+      { _id : team_id },
+      { $addToSet : { join_requests : { user_id } } },
+      { new : true }
+    )
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  destroyJoinRequest(team_id ,user_id ) {
+    var Team = this;
+    return Team.findOneAndUpdate(
+      { _id : team_id },
+      { $pull : { join_requests : { user_id } } },
+      { new : true }
+    )
+    .then(doc => {
+      return doc;
     })
     .catch(e => {
       return Promise.reject(e);

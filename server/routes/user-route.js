@@ -36,6 +36,18 @@ router.delete('/auth' ,authenticate_user ,userController.destroy_user);
 // POST ADD FRIEND
 router.post('/friends/:user_id', authenticate_user ,userController.add_friend);
 
+// POST SEND FRIEND REQUEST TO USER
+router.post('/:user_id/friend_requests', authenticate_user ,userController.add_friend_request);
+
+// POST SEND INVITATION  TO USER
+router.post('/:user_id/invitations', authenticate_user ,userController.invite_user_to_parent);
+
+// DELETE -- REJECT -- UNDO -- INVITAION -- REMOVE IT FROM THE USER
+router.delete('/:user_id/invitations' ,authenticate_user ,userController.destroy_parent_invitation);
+
+// DELETE -- REJECT -- UNDO -- FRIEND REQUEST --  REMOVE IT FROM THE RECIEVER
+router.delete('/:reciever_id/friend_requests/:sender_id' ,authenticate_user ,userController.destroy_friend_request);
+
 // DELETE FRIEND
 router.delete('/friends/:user_id', authenticate_user, userController.remove_friend)
 

@@ -51,6 +51,18 @@ var UserSchema = new Schema({
     type : String,
     required : false
   },
+  friend_requests : [{
+    user_id : ObjectId,
+    _id : false
+  }],
+  invitations : [{
+    parent_id : ObjectId,
+    parent_type : {
+      type: String,
+      enum : ['team','schedule']
+    },
+    _id : false
+  }],
   tokens : [{
     os : {
       type: String,
@@ -156,18 +168,75 @@ UserSchema.statics = {
       return Promise.reject(e);
     })
   },
-  addFriend(recieverId, senderId) {
+  addFriend(reciever_id, sender_id) {
     var User = this;
-    return User.findOneAndUpdate({_id : recieverId }, { $addToSet :
-      { friends : { user_id : senderId } }
-    },{new: true})
-    .then(recieverModel => {
-      return User.findOneAndUpdate({_id : senderId}, { $addToSet :
-        { friends : { user_id : recieverId }}
-      },{new: true})
-      .then(senderModel => {
-        return senderModel
+    return User.findOneAndUpdate(
+      { _id : reciever_id },
+      {
+        $addToSet : { friends : { user_id : sender_id } }
+      },
+      {new: true}
+    )
+    .then(reciever_model => {
+      return User.findOneAndUpdate(
+        { _id : sender_id },
+        {
+          $addToSet : { friends : { user_id : reciever_id } },
+          $pull     : { friend_requests : { user_id : reciever_id } }
+        },
+        {new: true }
+      )
+      .then(sender_model => {
+        return sender_model
       })
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  destroyFriendRequest(reciever_id, sender_id) {
+    var User = this;
+    return User.findOneAndUpdate(
+      { _id : reciever_id },
+      { $pull : {friend_requests : { user_id : sender_id }} },
+      {new : true}
+    ).then(user_model => {
+      return user_model
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  inviteUserToParent(user_id ,parent_id , parent_type) {
+    var User = this;
+    if (parent_type === 'schedule') {
+      update = { invitations : { parent_id , parent_type } }
+    }
+    if (parent_type === 'team') {
+      update = { invitations : {  parent_id , parent_type } }
+    }
+    return User.findOneAndUpdate(
+      { _id : user_id },
+      { $addToSet : update },
+      { new : true }
+    )
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  destroyParentInvitation(user_id ,parent_id) {
+    var User = this;
+    return User.findOneAndUpdate(
+      { _id: user_id } ,
+      { $pull : { invitations : { parent_id } } },
+      { new : true }
+    )
+    .then(doc => {
+      console.log(doc);
+      return doc;
     })
     .catch(e => {
       return Promise.reject(e);
@@ -225,6 +294,18 @@ UserSchema.statics = {
       .then(savedFriend => {
         return savedUser;
       })
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  addFriendRequest(reciever_id, sender_id) {
+    var User = this;
+    return User.findOneAndUpdate({ _id : reciever_id },{ $addToSet :
+      { friend_requests : { user_id : sender_id } }
+    }, { new : true })
+    .then(user_model => {
+      return user_model;
     })
     .catch(e => {
       return Promise.reject(e);

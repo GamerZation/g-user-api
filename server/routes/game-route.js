@@ -9,12 +9,15 @@ router.get('/', authenticate_user, gameController.list_games)
 
 router.get('/:game_id', authenticate_user, gameController.get_game)
 
+router.get('/:child_type/:child_id', authenticate_user, gameController.list_child_games);
+
 router.post('/', authenticate_user, gameController.create_game);
 
 router.post('/:game_id/:child_type/:child_id', authenticate_user, gameController.add_child);
 
-router.post('/', authenticate_user, gameController.create_game);
+router.delete('/:game_id/:child_type/:child_id', authenticate_user, gameController.delete_child);
 
+router.post('/', authenticate_user, gameController.create_game);
 
 router.put('/:game_id', authenticate_user, gameController.edit_game);
 
