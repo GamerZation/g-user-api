@@ -235,7 +235,9 @@ UserSchema.statics = {
       { new : true }
     )
     .then(doc => {
-      console.log(doc);
+      if (!doc) {
+        return Promise.reject('not found');
+      }
       return doc;
     })
     .catch(e => {
@@ -301,9 +303,11 @@ UserSchema.statics = {
   },
   addFriendRequest(reciever_id, sender_id) {
     var User = this;
-    return User.findOneAndUpdate({ _id : reciever_id },{ $addToSet :
-      { friend_requests : { user_id : sender_id } }
-    }, { new : true })
+    return User.findOneAndUpdate(
+      { _id : reciever_id },
+      { $addToSet : { friend_requests : { user_id : sender_id } } },
+      { new : true }
+    )
     .then(user_model => {
       return user_model;
     })

@@ -12,8 +12,11 @@ var validate_parent = function(parent_id ,parent_type) {
       return Promise.reject({ message : 'parent_id is not valid', error : e })
     })
   }else if (parent_type === 'schedule' && parent_id) {
-    return Schedule.validateById(child_id)
+    return Schedule.validateById(parent_id)
     .then((schedule) => {
+      if (!schedule) {
+        Promise.reject({ message : 'parent_id is not valid', error : e });
+      }
       return Promise.resolve(schedule);
     })
     .catch(e => {
@@ -21,7 +24,10 @@ var validate_parent = function(parent_id ,parent_type) {
     })
   }else if (parent_type === 'team' && parent_id){
     return Team.validateById(parent_id)
-    .then(() => {
+    .then((team) => {
+      if (!team) {
+        return Promise.reject({ message : 'parent_id is not valid', error : e })
+      }
       return Promise.resolve();
     })
     .catch(e => {

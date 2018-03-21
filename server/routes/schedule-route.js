@@ -36,5 +36,10 @@ router.post('/:schedule_id/join_requests', authenticate_user , scheduleControlle
 // PARAMS -- schedule_id
 router.delete('/:schedule_id/join_requests', authenticate_user , scheduleController.destroy_join_request)
 
+// POST -- ACCEPT USER JOINING THE SCHEDULE
+// BODY   -- child_id - child_type -- REQUIRED
+// PARAMS -- schedule_id
+router.put('/:schedule_id/join_requests', authenticate_user , scheduleController.accept_join_request)
+
 
 module.exports = router;

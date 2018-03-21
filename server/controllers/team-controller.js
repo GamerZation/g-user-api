@@ -1,6 +1,7 @@
 var Team = require('./../models/team-model');
 var User = require('./../models/user-model');
 var Schedule = require('./../models/schedule-model');
+var {validate_parent} = require('./../middleware/validation');
 const _  = require('lodash');
 
 
@@ -117,7 +118,92 @@ exports.add_join_request = function(req, res) {
 }
 
 
-// FOR REJECTING / DELETING THE USER FROM THE JOIN REQUESTS ARRAY
+// FOR ADDING INVITATION OBJECT TO THE TEAM INVITAIONS ARRAY
+// OBJECT CONTAINS parent_id  parent_type[enum -> schedule]
+// IN CASE OF ACCEPTING THE INVITATION OBJECT WILL BE DELETED
+// THE TEAM WILL BE ADDED TO THE PARENT ARRAY
+exports.invite_team_to_parent = function(req, res) {
+  var team_id     = req.params.team_id;
+  var parent_id   = req.body.parent_id;
+  var parent_type = req.body.parent_type;
+  validate_parent(parent_id ,parent_type)
+  .then(parent_model => {
+    return Team.inviteTeamToParent(team_id ,parent_id ,parent_type);
+  })
+  .then(team_model => {
+    res.send({message : 'Invitation added successfuly' , team_model });
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
+
+// FOR DELETING / REJCETING -> INVITAION OBJECT IN THE TEAM INVITAIONS ARRAY
+// REQUIRE parent_id parent_type[enum -> schedule]
+exports.destroy_parent_invitation = function(req, res) {
+  var team_id     = req.params.team_id;
+  var parent_id   = req.body.parent_id;
+  var parent_type = req.body.parent_type;
+  validate_parent(parent_id ,parent_type)
+  .then(parent_model => {
+    return Team.destroyParentInvitation(team_id ,parent_id ,parent_type);
+  })
+  .then(team_model => {
+    res.send({ message : 'Invitation destroied successfuly' , team_model });
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
+// ACCEPTING INVITAION
+// WILL DELETE THE INVITAION OBJECT AND ADD THE TEAM ID TO THE PARENT
+
+
+// LISTING JOIN REQUESTS TO SHOW IT TO THE TEAM
+// ABLE TO ACCEPT - REJECT
+exports.list_join_request = function(req, res) {
+  var team_id = req.params.team_id;
+  Team.listJoinRequests(team_id)
+  .then(join_requests => {
+    res.send({ join_requests })
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
+exports.list_parent_invitations = function(req, res) {
+  var team_id = req.params.team_id;
+  Team.listParentInvitations(team_id)
+  .then(parent_invitaions => {
+    res.send({parent_invitaions});
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}
+
+exports.accept_parent_invitation = function(req, res) {
+  var team_id     = req.params.team_id;
+  var child_id    = team_id;
+  var child_type  = 'team';
+  var parent_type = req.body.parent_type;
+  var parent_id   = req.body.parent_id;
+  validate_parent(parent_type, parent_id)
+  .then(parent => {
+    return parent.addParticipant(child_id, child_type);
+  })
+  .then(child => {
+    return Team.destroyParentInvitation(parent_id, parent_type);
+  })
+  .then(team_model => {
+    res.send({ message : 'Team added to parent successfully', team_model });
+  })
+}
+
+// FOR REJECTING / DELETING -> USER FROM THE JOIN REQUESTS ARRAY
 exports.destroy_join_request = function(req, res) {
   var user_id = req.body.user_id;
   var team_id = req.params.team_id;

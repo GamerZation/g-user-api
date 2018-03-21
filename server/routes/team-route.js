@@ -46,6 +46,32 @@ router.post('/:team_id/join_requests', authenticate_user , teamController.add_jo
 // DELETE -- REJECT USER FROM JOINING THE TEAM
 router.delete('/:team_id/join_requests', authenticate_user , teamController.destroy_join_request)
 
+// DELETE -- REJECT USER FROM JOINING THE TEAM
+router.get('/:team_id/join_requests', authenticate_user , teamController.list_join_request)
+
+// POST SEND INVITATION  TO TEAM
+// MOST PROBABLY FROM SCHEDULES
+// PARAMS -- team_id
+// BODY   -- parent_id -- parent_type
+router.post('/:team_id/invitations', authenticate_user ,teamController.invite_team_to_parent);
+
+// GET INVITATIONS SENT TO TEAM
+// MOST PROBABLY FROM SCHEDULES
+// PARAMS -- team_id
+router.get('/:team_id/invitations', authenticate_user ,teamController.list_parent_invitations);
+
+
+// DELETE -- REJECT -- UNDO -- INVITAION --> REMOVE IT FROM THE TEAM
+// PARAMS -- team_id
+// BODY   -- parent_id -- parent_type
+router.delete('/:team_id/invitations' ,authenticate_user ,teamController.destroy_parent_invitation);
+
+// PUT -- ACCEPT -> INVITAION --> REMOVE IT FROM THE TEAM AND ADD THE TEAM TO THE PARENT
+// PARAMS -- team_id
+// BODY   -- parent_id -- parent_type
+router.put('/:team_id/invitations' ,authenticate_user ,teamController.accept_parent_invitation);
+
+
 //  -- ACCEPTING USER IN THE TEAM MUST BE DONE THROUGH ADD MEMEBER REQUEST
 // TODO ADD MEMEBER SHOULD DESTROY THE JOIN REQUEST BEFORE ADDING
 

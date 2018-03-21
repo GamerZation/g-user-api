@@ -27,6 +27,13 @@ var TeamSchema = new Schema({
     user_id : ObjectId,
     _id : false
   }],
+  invitations : [{
+    parent_id : ObjectId,
+    parent_type : {
+      type : String,
+      enum : ['schedule']
+    }
+  }],
   members : [{
     member_id : {
       type: ObjectId
@@ -63,7 +70,7 @@ TeamSchema.pre('update',function (next) {
 TeamSchema.statics = {
   validateById(team_id) {
     var Team = this;
-    return Team.findOne({_id : team_id})
+    return Team.findOne({ _id : team_id })
     .then(team => {
       if (!team) {
         return Promise.reject();
@@ -185,6 +192,60 @@ TeamSchema.statics = {
     return Team.findOneAndUpdate(
       { _id : team_id },
       { $pull : { join_requests : { user_id } } },
+      { new : true }
+    )
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  listJoinRequests(team_id) {
+    var Team = this;
+    return Team.findOne({ _id : team_id})
+    .then(team_model => {
+      if (!team_model) {
+        return Promise.reject('Not Found');
+      }
+      return team_model.join_requests;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  listParentInvitations(team_id) {
+    var Team = this;
+    return Team.findOne({ _id : team_id})
+    .then(team_model => {
+      if (!team_model) {
+        return Promise.reject('Not found');
+      }
+      return team_model.invitations;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  inviteTeamToParent(team_id ,parent_id ,parent_type) {
+    var Team = this;
+    return Team.findOneAndUpdate(
+      { _id : team_id },
+      { $addToSet : { invitations : { parent_id , parent_type } } },
+      { new : true }
+    )
+    .then(doc => {
+      return doc;
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  destroyParentInvitation(team_id ,parent_id ,parent_type) {
+    var Team = this;
+    return Team.findOneAndUpdate(
+      { _id : team_id },
+      { $pull : { invitations : { parent_id , parent_type } } },
       { new : true }
     )
     .then(doc => {

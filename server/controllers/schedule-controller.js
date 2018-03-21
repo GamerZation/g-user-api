@@ -127,3 +127,23 @@ exports.destroy_join_request = function(req ,res) {
     res.status(400).send(e);
   })
 }
+
+// FOR ACCEPTING JOIN REQUESTS COMING FROM USER/TEAM
+// WILL DELETE THE JOIN REQUEST FROM THE JOIN REQUESTS ARRAY
+// WILL ADD THE CHILD-TYPE/ID TO THE PARTICIPANTS ARRAY
+exports.accept_join_request = function(req, res) {
+  var schedule_id = req.params.schedule_id;
+  var child_id    = req.body.child_id;
+  var child_type  = req.body.child_type;
+
+  validate_child(child_type ,child_id )
+  .then(res => {
+    return Schedule.acceptJoinRequest(schedule_id ,child_type ,child_id)
+  })
+  .then(schedule_model => {
+    res.send({ message : 'Join request accepted', schedule_model })
+  })
+  .catch(e => {
+    res.status(400).send(e);
+  })
+}

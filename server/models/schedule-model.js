@@ -145,10 +145,10 @@ scheduleSchema.statics = {
       if (!schedule) {
         return Promise.reject();
       }
-      return;
+      return schedule;
     })
     .catch(e => {
-      return Promise.reject();
+      return Promise.reject(e);
     })
   },
   validateUserOwnership(user_id, schedule_id) {
@@ -173,15 +173,15 @@ scheduleSchema.statics = {
     })
   },
   destroyJoinRequest(schedule_id ,child_type ,child_id) {
-    var Team = this;
-    return Team.findOneAndUpdate(
+    var Schedule = this;
+    return Schedule.findOneAndUpdate(
       { _id : schedule_id, parent_type : child_type },
       { $pull : { join_requests : { child_id } }  },
       { new : true }
     )
     .then(doc => {
       if (!scheduleModel) {
-        return Promise.reject({ message : 'schedule was not found' })
+        return Promise.reject({ message : 'Not found' })
       }
       return scheduleModel;
     })
@@ -189,13 +189,40 @@ scheduleSchema.statics = {
       return Promise.reject(e);
     })
   },
-  joinSchedule(schedule_id, {participant_id , type}) {
+  acceptJoinRequest(schedule_id ,child_type ,child_id) {
     var Schedule = this;
     return Schedule.findOneAndUpdate(
-      { _id : schedule_id },
-      { $addToSet : { participants : {  participant_id , type } } }
+      { _id : schedule_id, parent_type : child_type },
+      { $pull : { join_requests : { child_id } }  },
+      { new : true }
+    )
+    .then(schedule_doc => {
+      if (!schedule_doc) {
+        return Promise.reject('Not found');
+      }
+      return schedule_doc.update(
+        { $addToSet : { participants : { type : child_type , participant_id : child_id } } },
+        { new : true }
+      ).then(() => {
+        schedule_doc.participants.push( { type : child_type , participant_id : child_id } )
+        return schedule_doc;
+      })
+    })
+    .catch(e => {
+      return Promise.reject(e);
+    })
+  },
+  joinSchedule(schedule_id, { participant_id , type }) {
+    var Schedule = this;
+    return Schedule.findOneAndUpdate(
+      { _id : schedule_id } ,
+      { $addToSet : { participants : {  participant_id , type } } },
+      { new : true }
      )
      .then(doc => {
+       if (!doc) {
+         return Promise.reject({ message : 'Schedule was not found' });
+       }
        return doc;
      })
      .catch(e => {
@@ -241,6 +268,16 @@ scheduleSchema.methods = {
     var schedule = this;
     schedule.available = false;
     schedule.save()
+  },
+  addParticipant(participant_id, participant_type) {
+    var schedule = this;
+    schedule.update(
+      { $addToSet : { participants : { type : child_type , participant_id : child_id } } }
+    )
+    .then(success => {
+      schedule.participants.push({ type : child_type , participant_id : child_id })
+      return
+    })
   }
 }
 var schduleModel =  mongoose.model('schedule',scheduleSchema);
